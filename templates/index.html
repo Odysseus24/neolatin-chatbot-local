@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jozef - Neo-Latin Studies Assistant</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts - Renaissance inspired -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --renaissance-gold: #D4AF37;
+            --renaissance-burgundy: #722F37;
+            --renaissance-cream: #F5F5DC;
+            --renaissance-dark: #2C1810;
+            --renaissance-brown: #8B4513;
+            --parchment: #FDF6E3;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, var(--parchment) 0%, var(--renaissance-cream) 100%);
+            min-height: 100vh;
+            color: var(--renaissance-dark);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--renaissance-burgundy) 0%, var(--renaissance-brown) 100%);
+            color: var(--renaissance-cream);
+            padding: 2rem 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-bottom: 3px solid var(--renaissance-gold);
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--renaissance-gold);
+        }
+
+        .chat-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 2px solid var(--renaissance-gold);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--renaissance-gold) 0%, #B8860B 100%);
+            color: var(--renaissance-dark);
+            padding: 1rem;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 500;
+            border-bottom: 2px solid var(--renaissance-burgundy);
+        }
+
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--parchment);
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(114, 47, 55, 0.1) 0%, transparent 50%);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--renaissance-burgundy) 0%, var(--renaissance-brown) 100%);
+            color: white;
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 80%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .message.assistant {
+            text-align: left;
+        }
+
+        .message.assistant .message-bubble {
+            background: white;
+            color: var(--renaissance-dark);
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: 18px 18px 18px 4px;
+            max-width: 80%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--renaissance-gold);
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user .message-avatar {
+            background: var(--renaissance-burgundy);
+        }
+
+        .assistant .message-avatar {
+            background: var(--renaissance-gold);
+            color: var(--renaissance-dark);
+        }
+
+        .input-area {
+            padding: 1rem;
+            background: white;
+            border-top: 2px solid var(--renaissance-gold);
+        }
+
+        .form-control:focus {
+            border-color: var(--renaissance-gold);
+            box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--renaissance-gold) 0%, #B8860B 100%);
+            border: none;
+            color: var(--renaissance-dark);
+            font-weight: 600;
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #B8860B 0%, var(--renaissance-gold) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-outline-secondary {
+            border-color: var(--renaissance-burgundy);
+            color: var(--renaissance-burgundy);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--renaissance-burgundy);
+            border-color: var(--renaissance-burgundy);
+        }
+
+        .sources {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: var(--renaissance-cream);
+            border-radius: 8px;
+            border-left: 4px solid var(--renaissance-gold);
+            font-size: 0.9rem;
+        }
+
+        .sources-title {
+            font-weight: 600;
+            color: var(--renaissance-burgundy);
+            margin-bottom: 0.25rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .source-item {
+            margin-bottom: 0.25rem;
+            color: var(--renaissance-brown);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: var(--renaissance-burgundy);
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .controls {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .decorative-border {
+            background: linear-gradient(90deg, transparent, var(--renaissance-gold), transparent);
+            height: 2px;
+            margin: 1rem 0;
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--renaissance-cream);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--renaissance-gold);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--renaissance-burgundy);
+        }
+
+        /* Speech recognition button styles */
+        .mic-button {
+            position: relative;
+        }
+
+        .mic-button.listening {
+            background: #dc3545 !important;
+            border-color: #dc3545 !important;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .speech-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 12px;
+            height: 12px;
+            background: #dc3545;
+            border-radius: 50%;
+            display: none;
+            animation: blink 1s infinite;
+        }
+
+        .mic-button.listening .speech-indicator {
+            display: block;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Speech output button styles */
+        .speaker-button {
+            position: relative;
+            margin-left: 0.25rem;
+        }
+
+        .speaker-button.speaking {
+            background: #198754 !important;
+            border-color: #198754 !important;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .speaker-button.speaking i {
+            animation: bounce 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .message-controls {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+            justify-content: flex-start;
+        }
+
+        .message.assistant .message-controls {
+            justify-content: flex-start;
+        }
+
+        .btn-sm {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container text-center">
+            <h1><i class="bi bi-mortarboard"></i> Jozef</h1>
+            <div class="subtitle">Your Neo-Latin Studies Assistant</div>
+            <div class="decorative-border"></div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="bi bi-chat-dots"></i> Let us talk!
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="d-flex align-items-start">
+                        <div class="message-avatar">J</div>
+                        <div class="message-bubble">
+                            <strong>Salve!</strong> I am Jozef, your guide to the Neo-Latin world. How may I assist you today?
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <form id="chatForm">
+                    <div class="row g-2">
+                        <div class="col">
+                            <input type="text" class="form-control" id="messageInput" 
+                                   placeholder="Ask about Neo-Latin studies... (Ctrl+M: speak, Ctrl+Shift+S: auto-speak)" required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-secondary mic-button" id="micButton" title="Click to speak">
+                                <i class="bi bi-mic"></i>
+                                <div class="speech-indicator"></div>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-secondary" id="autoSpeakToggle" title="Toggle auto-speak responses">
+                                <i class="bi bi-volume-mute"></i>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-outline-secondary me-2" onclick="clearConversation()">
+                <i class="bi bi-trash"></i> Clear History
+            </button>
+            <button class="btn btn-outline-secondary me-2" onclick="processDocuments()">
+                <i class="bi bi-file-earmark-pdf"></i> Process Documents
+            </button>
+            <button class="btn btn-outline-warning" onclick="console.log('Test button clicked'); primeSpeechSynthesis(); testSpeechSynthesis();">
+                <i class="bi bi-speaker"></i> Test Speech
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="bi bi-hourglass-split"></i> Consulting the archives...
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const micButton = document.getElementById('micButton');
+        const autoSpeakToggle = document.getElementById('autoSpeakToggle');
+        const loading = document.getElementById('loading');
+
+        // Debug: Check if all elements are found
+        console.log('DOM elements found:');
+        console.log('- chatMessages:', !!chatMessages);
+        console.log('- chatForm:', !!chatForm);
+        console.log('- messageInput:', !!messageInput);
+        console.log('- micButton:', !!micButton);
+        console.log('- autoSpeakToggle:', !!autoSpeakToggle);
+        console.log('- loading:', !!loading);
+
+        // Ensure form event listener is attached
+        if (chatForm) {
+            // Use simple form handler
+            chatForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                const message = messageInput.value.trim();
+                if (!message) return false;
+
+                // Add user message to chat
+                addMessage('user', message);
+                messageInput.value = '';
+                showLoading(true);
+
+                // Send chat request
+                sendChatRequest(message);
+                
+                return false;
+            };
+        }
+
+        function sendChatRequest(message) {
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.response) {
+                    addMessage('assistant', data.response, data.sources);
+                } else {
+                    addMessage('assistant', 'I apologize, but I encountered an error.');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                showLoading(false);
+                addMessage('assistant', 'I apologize, but I\'m having trouble connecting right now. Please try again.');
+            });
+        }
+
+        // Test button responsiveness
+        if (micButton) {
+            micButton.onclick = function() {
+                console.log('Microphone button clicked - direct onclick test');
+                handleMicrophoneClick();
+            };
+        }
+        
+        if (autoSpeakToggle) {
+            autoSpeakToggle.onclick = function() {
+                console.log('Auto-speak button clicked - direct onclick test');
+                handleAutoSpeakToggle();
+            };
+        }
+
+        function handleMicrophoneClick() {
+            // Initialize speech recognition on first click if not done yet
+            if (!recognition && !mediaRecorder) {
+                initializeSpeechRecognition();
+            }
+            
+            // Handle click based on the initialized method
+            if (mediaRecorder !== null || ('MediaRecorder' in window)) {
+                handleWhisperClick();
+            } else if (recognition) {
+                handleWebSpeechClick();
+            } else {
+                showToast('Speech recognition not available in this browser');
+            }
+        }
+
+        function handleAutoSpeakToggle() {
+            autoSpeak = !autoSpeak;
+            console.log('Auto-speak toggled to:', autoSpeak);
+            
+            if (autoSpeak) {
+                autoSpeakToggle.innerHTML = '<i class="bi bi-volume-up"></i>';
+                autoSpeakToggle.title = 'Auto-speak enabled - click to disable';
+                autoSpeakToggle.classList.remove('btn-outline-secondary');
+                autoSpeakToggle.classList.add('btn-success');
+                showToast('Auto-speak enabled');
+                
+                // Test speech synthesis
+                testSpeechSynthesis();
+            } else {
+                autoSpeakToggle.innerHTML = '<i class="bi bi-volume-mute"></i>';
+                autoSpeakToggle.title = 'Auto-speak disabled - click to enable';
+                autoSpeakToggle.classList.remove('btn-success');
+                autoSpeakToggle.classList.add('btn-outline-secondary');
+                showToast('Auto-speak disabled');
+                
+                // Stop any current speech
+                if (currentUtterance) {
+                    speechSynthesis.cancel();
+                }
+            }
+        }
+
+        function testSpeechSynthesis() {
+            console.log('Testing speech synthesis...');
+            
+            if (!('speechSynthesis' in window)) {
+                console.error('Speech synthesis not supported');
+                showToast('Speech synthesis not supported in this browser');
+                return;
+            }
+            
+            // Cancel any existing speech
+            speechSynthesis.cancel();
+            
+            // Force reload voices first
+            console.log('Forcing voice reload...');
+            voices = speechSynthesis.getVoices();
+            console.log('Voices available:', voices.length);
+            
+            if (voices.length === 0) {
+                console.warn('No voices available, waiting for voices to load...');
+                showToast('Loading voices, please wait...');
+                
+                // Wait for voices to load
+                const waitForVoices = () => {
+                    voices = speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        console.log('Voices loaded, retrying test...');
+                        loadVoices();
+                        performSpeechTest();
+                    } else {
+                        setTimeout(waitForVoices, 100);
+                    }
+                };
+                
+                // Set up voice change listener
+                speechSynthesis.onvoiceschanged = () => {
+                    console.log('Voices changed, loading...');
+                    voices = speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        loadVoices();
+                        performSpeechTest();
+                    }
+                };
+                
+                waitForVoices();
+                return;
+            }
+            
+            // If we have voices, proceed with test
+            loadVoices();
+            performSpeechTest();
+        }
+        
+        function performSpeechTest() {
+            console.log('Performing speech test...');
+            
+            // Simple test utterance
+            const testText = 'Hello! Speech synthesis is working correctly.';
+            console.log('Creating test utterance with text:', testText);
+            
+            try {
+                const testUtterance = new SpeechSynthesisUtterance(testText);
+                testUtterance.rate = 0.9;
+                testUtterance.pitch = 1.0;
+                testUtterance.volume = 1.0;
+                
+                // Use selected voice if available
+                if (selectedVoice) {
+                    testUtterance.voice = selectedVoice;
+                    console.log('Using voice for test:', selectedVoice.name, selectedVoice.lang);
+                } else if (voices.length > 0) {
+                    // Use first English voice
+                    const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+                    testUtterance.voice = englishVoice;
+                    console.log('Using fallback voice:', englishVoice.name, englishVoice.lang);
+                } else {
+                    console.log('No voice selected, using browser default');
+                }
+                
+                testUtterance.onstart = () => {
+                    console.log('✓ Test speech started successfully');
+                    showToast('✓ Speech test started!', 'success');
+                };
+                
+                testUtterance.onend = () => {
+                    console.log('✓ Test speech ended successfully');
+                    showToast('✓ Speech test completed successfully!', 'success');
+                };
+                
+                testUtterance.onerror = (e) => {
+                    console.error('✗ Test speech error:', e);
+                    showToast('✗ Speech test failed: ' + e.error, 'error');
+                };
+                
+                console.log('Speaking test utterance...');
+                console.log('Current speechSynthesis state:', {
+                    speaking: speechSynthesis.speaking,
+                    pending: speechSynthesis.pending,
+                    paused: speechSynthesis.paused
+                });
+                
+                speechSynthesis.speak(testUtterance);
+                
+                // Check if speech started
+                setTimeout(() => {
+                    console.log('Checking speech status after 300ms...');
+                    console.log('Speech synthesis state:', {
+                        speaking: speechSynthesis.speaking,
+                        pending: speechSynthesis.pending,
+                        paused: speechSynthesis.paused
+                    });
+                    
+                    if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+                        console.warn('✗ Speech may not have started');
+                        showToast('⚠️ Speech may not be working. Check browser settings.', 'warning');
+                    }
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error creating test utterance:', error);
+                showToast('Error testing speech: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-speak setting
+        var autoSpeak = false;
+
+        // Speech Recognition Setup - Enhanced with Whisper
+        let recognition = null;
+        let isListening = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioStream = null;
+
+        // Load voices on page load and when voices change
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // Initialize speech recognition based on browser support
+        // initializeSpeechRecognition(); // Called lazily on first mic button click
+
+        function initializeSpeechRecognition() {
+            // Check for MediaRecorder support (better than Web Speech API)
+            const hasMediaRecorder = 'MediaRecorder' in window;
+            const hasWebSpeech = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+
+            if (hasMediaRecorder) {
+                console.log('Using Whisper-based speech recognition for high quality');
+                setupWhisperRecording();
+            } else if (hasWebSpeech) {
+                console.log('Falling back to Web Speech API');
+                setupWebSpeechAPI();
+            } else {
+                console.log('Speech recognition not supported');
+                micButton.style.display = 'none';
+            }
+        }
+
+        function setupWhisperRecording() {
+            // Don't add event listener here since we handle it directly
+        }
+
+        // Voice Activity Detection variables
+        var audioContext = null;
+        var analyser = null;
+        var silenceTimer = null;
+        var silenceThreshold = 0.02;  // Increased from 0.01 - adjust sensitivity (lower = more sensitive to silence)
+        var silenceTimeout = 3000;    // 3 seconds of silence before auto-stop
+        var minRecordingTime = 1000;  // Minimum 1 second recording
+        var recordingStartTime = 0;
+        
+        // Allow users to adjust sensitivity if needed
+        window.setSilenceDetection = function(threshold = 0.02, timeout = 3000) {
+            silenceThreshold = threshold;
+            silenceTimeout = timeout;
+            console.log(`Silence detection updated: threshold=${threshold}, timeout=${timeout}ms`);
+            showToast(`Silence detection: threshold=${threshold}, timeout=${timeout/1000}s`, 'success');
+        };
+        
+        // Debug function to check current audio level
+        window.checkAudioLevel = function() {
+            if (analyser && isListening) {
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    sum += dataArray[i];
+                }
+                const level = sum / bufferLength / 255;
+                console.log('Current audio level:', level.toFixed(4), 'threshold:', silenceThreshold);
+                showToast(`Audio level: ${level.toFixed(4)} (threshold: ${silenceThreshold})`, 'warning');
+                return level;
+            } else {
+                console.log('Not currently listening or analyser not available');
+                showToast('Not currently recording', 'warning');
+                return 0;
+            }
+        };
+
+        async function handleWhisperClick() {
+            if (isListening) {
+                stopWhisperRecording();
+            } else {
+                startWhisperRecording();
+            }
+        }
+
+        async function startWhisperRecording() {
+            try {
+                // Request high-quality audio stream with optimal settings for speech
+                audioStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        sampleRate: 44100,  // Higher sample rate for better quality
+                        channelCount: 1,    // Mono for speech
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                        latency: 0.1,      // Low latency
+                        volume: 1.0        // Full volume
+                    } 
+                });
+                
+                audioChunks = [];
+                recordingStartTime = Date.now();
+                
+                // Set listening state BEFORE setting up VAD
+                isListening = true;
+                micButton.classList.add('listening');
+                micButton.innerHTML = '<i class="bi bi-mic-fill"></i><div class="speech-indicator"></div>';
+                micButton.title = 'Listening with Whisper... (Auto-stops after silence)';
+                messageInput.placeholder = 'Listening with high-quality Whisper recognition... Speak now!';
+                
+                // Set up audio analysis for silence detection AFTER isListening is true
+                await setupVoiceActivityDetection();
+                
+                // Try different MIME types for best quality
+                let mimeType = 'audio/webm;codecs=opus';
+                if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    mimeType = 'audio/wav';
+                } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=pcm')) {
+                    mimeType = 'audio/webm;codecs=pcm';
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    mimeType = 'audio/mp4';
+                }
+                
+                console.log('Using MIME type:', mimeType);
+                
+                mediaRecorder = new MediaRecorder(audioStream, {
+                    mimeType: mimeType,
+                    audioBitsPerSecond: 128000  // High bitrate for quality
+                });
+                
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = function() {
+                    cleanupVoiceActivityDetection();
+                    processWhisperAudio();
+                };
+                
+                // Record in chunks for better handling
+                mediaRecorder.start(1000); // 1 second chunks
+                
+                showToast('🎤 Recording started - will auto-stop after 3s of silence', 'success');
+                
+                // Fallback: Simple timer-based auto-stop if VAD fails
+                if (!audioContext || !analyser) {
+                    console.log('VAD not available, using simple timer fallback');
+                    setTimeout(() => {
+                        if (isListening) {
+                            console.log('Fallback: Auto-stopping after 10 seconds');
+                            showToast('⏰ Auto-stopping recording after 10 seconds', 'warning');
+                            stopWhisperRecording();
+                        }
+                    }, 10000); // 10 second fallback
+                }
+                
+            } catch (error) {
+                console.error('Error starting Whisper recording:', error);
+                showToast('Microphone access denied or not available');
+            }
+        }
+
+        async function setupVoiceActivityDetection() {
+            try {
+                console.log('Setting up voice activity detection...');
+                
+                // Create audio context for analysis
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                
+                console.log('Audio context created:', audioContext.state);
+                
+                // Resume audio context if suspended (required for some browsers)
+                if (audioContext.state === 'suspended') {
+                    console.log('Resuming suspended audio context...');
+                    await audioContext.resume();
+                    console.log('Audio context resumed:', audioContext.state);
+                }
+                
+                // Connect microphone stream to analyser
+                const source = audioContext.createMediaStreamSource(audioStream);
+                source.connect(analyser);
+                
+                // Configure analyser
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.3;
+                
+                console.log('Analyser configured. Starting audio level monitoring...');
+                console.log('isListening state:', isListening);
+                
+                // Start monitoring audio levels with a small delay to ensure everything is ready
+                setTimeout(() => {
+                    console.log('Starting monitoring with delay, isListening:', isListening);
+                    monitorAudioLevel();
+                }, 100);
+                
+            } catch (error) {
+                console.error('Could not set up voice activity detection:', error);
+                showToast('Voice activity detection failed - manual stop required', 'warning');
+                // Fall back to manual control only
+            }
+        }
+
+        function monitorAudioLevel() {
+            if (!analyser || !isListening) {
+                console.log('Monitoring stopped: analyser=', !!analyser, 'isListening=', isListening);
+                return;
+            }
+            
+            if (audioContext && audioContext.state !== 'running') {
+                console.log('Audio context not running:', audioContext.state);
+                // Try to resume again
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed during monitoring');
+                }).catch(err => {
+                    console.error('Failed to resume audio context:', err);
+                });
+            }
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            try {
+                analyser.getByteFrequencyData(dataArray);
+            } catch (error) {
+                console.error('Error getting frequency data:', error);
+                // Continue monitoring despite error
+                if (isListening) {
+                    requestAnimationFrame(monitorAudioLevel);
+                }
+                return;
+            }
+            
+            // Calculate average volume level
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                sum += dataArray[i];
+            }
+            const averageLevel = sum / bufferLength / 255; // Normalize to 0-1
+            
+            // Log audio level every few frames for debugging
+            const now = Date.now();
+            if (!window.lastAudioLog || now - window.lastAudioLog > 2000) {
+                console.log('Audio level:', averageLevel.toFixed(4), 'threshold:', silenceThreshold, 'above threshold:', averageLevel > silenceThreshold);
+                console.log('Audio context state:', audioContext ? audioContext.state : 'no context');
+                window.lastAudioLog = now;
+            }
+            
+            // Update visual indicator based on audio level
+            const indicator = document.querySelector('.speech-indicator');
+            if (indicator) {
+                if (averageLevel > silenceThreshold) {
+                    // Voice detected - show green pulsing indicator
+                    indicator.style.backgroundColor = '#28a745'; // Green
+                    indicator.style.opacity = Math.min(1, averageLevel * 4); // Dynamic opacity
+                    indicator.style.transform = `scale(${1 + averageLevel})`;
+                } else {
+                    // Silence - show red indicator
+                    indicator.style.backgroundColor = '#dc3545'; // Red
+                    indicator.style.opacity = '0.7';
+                    indicator.style.transform = 'scale(1)';
+                }
+            }
+            
+            // Check if we're above or below silence threshold
+            if (averageLevel > silenceThreshold) {
+                // Voice detected - clear silence timer
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                    console.log('Voice detected, silence timer cleared');
+                    
+                    // Reset mic button to normal listening state
+                    micButton.innerHTML = '<i class="bi bi-mic-fill"></i><div class="speech-indicator"></div>';
+                }
+                
+            } else {
+                // Silence detected - start timer if not already started
+                if (!silenceTimer && isListening) {
+                    const recordingDuration = Date.now() - recordingStartTime;
+                    
+                    // Only start silence timer after minimum recording time
+                    if (recordingDuration > minRecordingTime) {
+                        console.log(`Silence detected after ${recordingDuration}ms, starting ${silenceTimeout}ms timer...`);
+                        
+                        // Show countdown in mic button
+                        let countdown = Math.ceil(silenceTimeout / 1000);
+                        const updateCountdown = () => {
+                            if (countdown > 0 && isListening && silenceTimer) {
+                                micButton.innerHTML = `<i class="bi bi-mic-fill"></i><div class="speech-indicator"></div><small style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:#666;">${countdown}s</small>`;
+                                countdown--;
+                                setTimeout(updateCountdown, 1000);
+                            }
+                        };
+                        updateCountdown();
+                        
+                        silenceTimer = setTimeout(() => {
+                            console.log('Auto-stopping recording due to silence');
+                            showToast('🔇 Silence detected - stopping recording', 'warning');
+                            stopWhisperRecording();
+                        }, silenceTimeout);
+                    } else {
+                        console.log(`Silence detected but still in minimum recording period (${recordingDuration}ms < ${minRecordingTime}ms)`);
+                    }
+                }
+            }
+            
+            // Continue monitoring
+            if (isListening) {
+                requestAnimationFrame(monitorAudioLevel);
+            } else {
+                console.log('Stopping monitoring - isListening is false');
+            }
+        }
+
+        function cleanupVoiceActivityDetection() {
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+                silenceTimer = null;
+            }
+            
+            if (audioContext && audioContext.state !== 'closed') {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            analyser = null;
+        }
+
+        function stopWhisperRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Clean up voice activity detection
+            cleanupVoiceActivityDetection();
+            
+            resetMicButton();
+        }
+
+        async function processWhisperAudio() {
+            try {
+                const audioBlob = new Blob(audioChunks, { 
+                    type: mediaRecorder.mimeType || 'audio/webm' 
+                });
+                
+                console.log('Original audio size:', audioBlob.size, 'bytes');
+                console.log('Original audio type:', audioBlob.type);
+                
+                // Convert to WAV format for optimal Whisper compatibility
+                const wavBlob = await convertToWAV(audioBlob);
+                
+                const formData = new FormData();
+                formData.append('audio', wavBlob, 'recording.wav');
+                
+                showToast('Processing speech with Whisper...');
+                
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.transcript.trim()) {
+                    messageInput.value = result.transcript;
+                    messageInput.focus();
+                    
+                    const confidencePercent = Math.round(result.confidence * 100);
+                    showToast(`Transcribed with ${confidencePercent}% confidence (${result.duration?.toFixed(1)}s)`);
+                    
+                    // Auto-submit if we got a good result and decent confidence
+                    if (result.confidence > 0.5) {
+                        setTimeout(() => {
+                            chatForm.dispatchEvent(new Event('submit'));
+                        }, 1000);
+                    }
+                } else {
+                    showToast('No speech detected or transcription failed');
+                }
+                
+            } catch (error) {
+                console.error('Error processing Whisper audio:', error);
+                showToast('Error processing speech. Please try again.');
+            }
+        }
+
+        async function convertToWAV(audioBlob) {
+            try {
+                // If already WAV, return as-is
+                if (audioBlob.type.includes('wav')) {
+                    return audioBlob;
+                }
+                
+                // Use Web Audio API to convert to high-quality WAV
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: 44100  // High quality sample rate
+                });
+                
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                // Convert to WAV format
+                const wavBuffer = audioBufferToWav(audioBuffer);
+                const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+                
+                console.log('Converted to WAV, size:', wavBlob.size, 'bytes');
+                
+                // Clean up
+                audioContext.close();
+                
+                return wavBlob;
+                
+            } catch (error) {
+                console.error('WAV conversion failed, using original:', error);
+                // Fallback to original blob if conversion fails
+                return audioBlob;
+            }
+        }
+
+        function audioBufferToWav(buffer) {
+            const length = buffer.length;
+            const sampleRate = buffer.sampleRate;
+            const numberOfChannels = buffer.numberOfChannels;
+            const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+            view.setUint16(32, numberOfChannels * 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, length * numberOfChannels * 2, true);
+            
+            // Convert audio data
+            let offset = 44;
+            for (let i = 0; i < length; i++) {
+                for (let channel = 0; channel < numberOfChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            
+            return arrayBuffer;
+        }
+
+        // Speech Synthesis Setup - Using var to avoid hoisting issues
+        var speechSynthesis = window.speechSynthesis;
+        var currentUtterance = null;
+        var voices = [];
+        var selectedVoice = null;
+        var speechReady = false;
+
+        // Initialize speech synthesis
+        function initializeSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                console.log('Speech synthesis supported');
+                
+                // Load voices immediately
+                loadVoices();
+                
+                // Also load when voices change (some browsers load them asynchronously)
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => {
+                        console.log('Voices changed event fired');
+                        loadVoices();
+                    };
+                }
+                
+                // Set a flag that speech is ready after a short delay
+                setTimeout(() => {
+                    speechReady = true;
+                    console.log('Speech synthesis marked as ready');
+                }, 1000);
+                
+            } else {
+                console.log('Speech synthesis not supported');
+            }
+        }
+
+        // Call initialization
+        initializeSpeechSynthesis();
+
+        // Prime speech synthesis for modern browsers
+        var speechPrimed = false;
+        function primeSpeechSynthesis() {
+            if (speechPrimed || !('speechSynthesis' in window)) return;
+            
+            console.log('Priming speech synthesis...');
+            try {
+                // Create a silent utterance to prime the speech engine
+                const silentUtterance = new SpeechSynthesisUtterance('');
+                silentUtterance.volume = 0;
+                speechSynthesis.speak(silentUtterance);
+                speechSynthesis.cancel();
+                speechPrimed = true;
+                console.log('Speech synthesis primed successfully');
+            } catch (error) {
+                console.warn('Could not prime speech synthesis:', error);
+            }
+        }
+
+        // Add click listener to prime speech on first interaction
+        document.addEventListener('click', primeSpeechSynthesis, { once: true });
+        document.addEventListener('keydown', primeSpeechSynthesis, { once: true });
+
+        // Load voices
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            console.log('Available voices:', voices.length);
+            console.log('Voice list:', voices.map(v => `${v.name} (${v.lang})`));
+            
+            // Prioritize high-quality English voices
+            const preferredVoices = [
+                // macOS high-quality voices
+                'Samantha', 'Alex', 'Victoria', 'Karen', 'Moira',
+                // Windows high-quality voices  
+                'Microsoft Zira', 'Microsoft David', 'Microsoft Hazel',
+                // Chrome/Edge neural voices
+                'Google US English', 'Microsoft Ana', 'Microsoft Aria'
+            ];
+            
+            // Find the best available voice
+            selectedVoice = null;
+            
+            // First try to find preferred voices
+            for (const preferred of preferredVoices) {
+                selectedVoice = voices.find(voice => 
+                    voice.name.includes(preferred) && voice.lang.startsWith('en')
+                );
+                if (selectedVoice) {
+                    console.log('Found preferred voice:', selectedVoice.name);
+                    break;
+                }
+            }
+            
+            // Fallback to any high-quality English voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && 
+                    (voice.name.includes('Neural') || 
+                     voice.name.includes('Premium') || 
+                     voice.name.includes('Enhanced') ||
+                     voice.name.includes('Natural'))
+                );
+                if (selectedVoice) {
+                    console.log('Found high-quality voice:', selectedVoice.name);
+                }
+            }
+            
+            // Final fallback to any English voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+                if (selectedVoice) {
+                    console.log('Found English voice:', selectedVoice.name);
+                }
+            }
+            
+            // Ultimate fallback to first available voice
+            if (!selectedVoice && voices.length > 0) {
+                selectedVoice = voices[0];
+                console.log('Using first available voice:', selectedVoice.name);
+            }
+            
+            if (selectedVoice) {
+                console.log('Selected voice:', selectedVoice.name, selectedVoice.lang);
+            } else {
+                console.log('No voice selected!');
+            }
+        }
+
+        function setupWebSpeechAPI() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                isListening = true;
+                micButton.classList.add('listening');
+                micButton.innerHTML = '<i class="bi bi-mic-fill"></i><div class="speech-indicator"></div>';
+                micButton.title = 'Listening... Click to stop';
+                messageInput.placeholder = 'Listening for your question...';
+            };
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+                messageInput.focus();
+                
+                // Auto-submit if we got a good result
+                if (transcript.trim().length > 0) {
+                    setTimeout(() => {
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }, 500);
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                resetMicButton();
+                
+                let errorMessage = 'Speech recognition error. ';
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMessage += 'No speech detected. Please try again.';
+                        break;
+                    case 'network':
+                        errorMessage += 'Network error. Please check your connection.';
+                        break;
+                    case 'not-allowed':
+                        errorMessage += 'Microphone access denied. Please allow microphone access.';
+                        break;
+                    default:
+                        errorMessage += 'Please try again.';
+                }
+                
+                showToast(errorMessage);
+            };
+            
+            recognition.onend = function() {
+                resetMicButton();
+            };
+            
+            // Don't add event listener here since we handle it directly
+        }
+
+        function handleWebSpeechClick() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    showToast('Could not start speech recognition. Please try again.');
+                }
+            }
+        }
+
+        function resetMicButton() {
+            isListening = false;
+            micButton.classList.remove('listening');
+            micButton.innerHTML = '<i class="bi bi-mic"></i><div class="speech-indicator"></div>';
+            micButton.title = 'Click to speak';
+            messageInput.placeholder = 'Ask about Neo-Latin studies... (Ctrl+M: speak, Ctrl+Shift+S: auto-speak)';
+        }
+
+        function speakText(text, button) {
+            console.log('speakText called with text length:', text.length);
+            
+            // Ensure variables are initialized
+            if (typeof speechSynthesis === 'undefined') {
+                speechSynthesis = window.speechSynthesis;
+            }
+            if (typeof currentUtterance === 'undefined') {
+                currentUtterance = null;
+            }
+            if (typeof speechReady === 'undefined') {
+                speechReady = false;
+            }
+            if (typeof selectedVoice === 'undefined') {
+                selectedVoice = null;
+            }
+            
+            console.log('speechSynthesis available:', 'speechSynthesis' in window);
+            console.log('speechReady:', speechReady);
+            console.log('selectedVoice:', selectedVoice);
+            
+            if (!('speechSynthesis' in window)) {
+                showToast('Speech synthesis not supported in this browser');
+                return;
+            }
+            
+            // Stop any current speech
+            if (currentUtterance) {
+                speechSynthesis.cancel();
+                currentUtterance = null;
+                // Wait for cancellation to complete
+                setTimeout(() => startSpeech(), 200);
+            } else {
+                startSpeech();
+            }
+            
+            function startSpeech() {
+                // Clean text for better speech
+                const cleanText = text
+                    .replace(/\*\*/g, '') // Remove bold markdown
+                    .replace(/\*/g, '') // Remove italic markdown
+                    .replace(/`[^`]+`/g, '') // Remove code blocks
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert links to just text
+                    .replace(/\n+/g, '. ') // Replace newlines with periods for natural pauses
+                    .replace(/\s+/g, ' ') // Normalize whitespace
+                    .replace(/([.!?])\s*([.!?])/g, '$1 ') // Clean up multiple punctuation
+                    .trim();
+
+                if (!cleanText) {
+                    showToast('No text to speak');
+                    return;
+                }
+
+                console.log('Creating utterance with clean text:', cleanText.substring(0, 100) + '...');
+                
+                try {
+                    currentUtterance = new SpeechSynthesisUtterance(cleanText);
+                    
+                    // Use selected voice if available
+                    if (typeof selectedVoice !== 'undefined' && selectedVoice) {
+                        currentUtterance.voice = selectedVoice;
+                        console.log('Using voice:', selectedVoice.name);
+                    } else {
+                        console.log('No voice selected, using default');
+                    }
+                    
+                    // Optimize speech parameters
+                    currentUtterance.rate = 0.85;
+                    currentUtterance.pitch = 1.0;
+                    currentUtterance.volume = 0.9;
+                    
+                    // Add event handlers
+                    currentUtterance.onstart = function() {
+                        console.log('Speech started');
+                        button.classList.add('speaking');
+                        button.innerHTML = '<i class="bi bi-volume-up-fill"></i>';
+                        button.title = 'Click to stop speaking';
+                    };
+
+                    currentUtterance.onend = function() {
+                        console.log('Speech ended');
+                        button.classList.remove('speaking');
+                        button.innerHTML = '<i class="bi bi-volume-up"></i>';
+                        button.title = 'Click to hear this response';
+                        currentUtterance = null;
+                    };
+
+                    currentUtterance.onerror = function(event) {
+                        console.error('Speech synthesis error:', event);
+                        button.classList.remove('speaking');
+                        button.innerHTML = '<i class="bi bi-volume-up"></i>';
+                        button.title = 'Click to hear this response';
+                        currentUtterance = null;
+                        showToast('Speech error: ' + event.error);
+                    };
+
+                    // Start speaking
+                    console.log('Starting speech synthesis...');
+                    speechSynthesis.speak(currentUtterance);
+                    
+                    // Verify speech started
+                    setTimeout(() => {
+                        if (currentUtterance && !speechSynthesis.speaking) {
+                            console.warn('Speech may not have started, trying again...');
+                            speechSynthesis.speak(currentUtterance);
+                        }
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('Error creating speech utterance:', error);
+                    showToast('Error starting speech: ' + error.message);
+                }
+            }
+        }
+
+        function stopSpeaking(button) {
+            // Ensure variables are initialized
+            if (typeof currentUtterance === 'undefined') {
+                currentUtterance = null;
+            }
+            if (typeof speechSynthesis === 'undefined') {
+                speechSynthesis = window.speechSynthesis;
+            }
+            
+            if (currentUtterance) {
+                speechSynthesis.cancel();
+                button.classList.remove('speaking');
+                button.innerHTML = '<i class="bi bi-volume-up"></i>';
+                button.title = 'Click to hear this response';
+                currentUtterance = null;
+            }
+        }
+
+        function toggleSpeech(messageId, button) {
+            console.log('toggleSpeech called for messageId:', messageId);
+            console.log('button:', button);
+            
+            // Ensure variables are initialized
+            if (typeof currentUtterance === 'undefined') {
+                currentUtterance = null;
+            }
+            if (typeof speechSynthesis === 'undefined') {
+                speechSynthesis = window.speechSynthesis;
+            }
+            
+            console.log('currentUtterance:', currentUtterance);
+            console.log('button has speaking class:', button.classList.contains('speaking'));
+            
+            // If currently speaking, stop
+            if (currentUtterance && button.classList.contains('speaking')) {
+                stopSpeaking(button);
+                return;
+            }
+
+            // Get the message content
+            const messageElement = document.getElementById(messageId);
+            if (!messageElement) {
+                console.error('Message element not found:', messageId);
+                return;
+            }
+
+            const text = messageElement.textContent || messageElement.innerText;
+            console.log('Text to speak:', text.substring(0, 100) + '...');
+            if (!text.trim()) {
+                console.error('No text to speak');
+                return;
+            }
+
+            speakText(text, button);
+        }
+
+        // Make toggleSpeech globally accessible
+        window.toggleSpeech = toggleSpeech;
+        window.testSpeechSynthesis = testSpeechSynthesis;
+
+        // Auto-speak toggle functionality is now handled by direct onclick
+
+        function showToast(message, type = 'warning') {
+            // Simple toast notification with different types
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'error' ? 'alert-danger' : 
+                             'alert-warning';
+            
+            const toast = document.createElement('div');
+            toast.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 5 seconds (8 seconds for success messages)
+            const timeout = type === 'success' ? 8000 : 5000;
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, timeout);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + M to toggle microphone
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                if (micButton && micButton.style.display !== 'none') {
+                    handleMicrophoneClick();
+                }
+            }
+            // Ctrl/Cmd + Shift + S to toggle auto-speak
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                handleAutoSpeakToggle();
+            }
+            // Escape to stop any current speech
+            if (e.key === 'Escape' && currentUtterance) {
+                speechSynthesis.cancel();
+            }
+        });
+
+        function addMessage(role, content, sources = null) {
+            if (!chatMessages) {
+                console.error('chatMessages element not found!');
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = role === 'user' ? 'U' : 'J';
+            const alignClass = role === 'user' ? 'justify-content-end' : 'justify-content-start';
+            
+            let sourcesHtml = '';
+            if (sources && sources.length > 0) {
+                sourcesHtml = `
+                    <div class="sources">
+                        <div class="sources-title"><i class="bi bi-book"></i> Sources:</div>
+                        ${sources.map(source => `
+                            <div class="source-item">
+                                <strong>${source.file}</strong>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Add speaker button for assistant messages
+            let controlsHtml = '';
+            let messageId = '';
+            if (role === 'assistant' && 'speechSynthesis' in window) {
+                messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
+                controlsHtml = `
+                    <div class="message-controls">
+                        <button type="button" class="btn btn-outline-secondary btn-sm speaker-button" 
+                                onclick="toggleSpeech('${messageId}', this)" 
+                                title="Click to hear this response">
+                            <i class="bi bi-volume-up"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex ${alignClass}">
+                    ${role === 'assistant' ? `<div class="message-avatar">${avatar}</div>` : ''}
+                    <div>
+                        <div class="message-bubble" ${role === 'assistant' && messageId ? `id="${messageId}"` : ''}>${content}</div>
+                        ${sourcesHtml}
+                        ${controlsHtml}
+                    </div>
+                    ${role === 'user' ? `<div class="message-avatar">${avatar}</div>` : ''}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Auto-speak assistant messages if enabled
+            if (role === 'assistant' && autoSpeak && 'speechSynthesis' in window && messageId) {
+                setTimeout(() => {
+                    const speakerButton = messageDiv.querySelector('.speaker-button');
+                    if (speakerButton) {
+                        toggleSpeech(messageId, speakerButton);
+                    }
+                }, 500); // Small delay to ensure DOM is ready
+            }
+        }
+
+        function showLoading(show) {
+            if (!loading) {
+                console.error('loading element not found!');
+                return;
+            }
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        async function clearConversation() {
+            try {
+                const response = await fetch('/clear', { method: 'POST' });
+                if (response.ok) {
+                    chatMessages.innerHTML = `
+                        <div class="message assistant">
+                            <div class="d-flex align-items-start">
+                                <div class="message-avatar">J</div>
+                                <div class="message-bubble">
+                                    Conversation history cleared. How may I assist you with your Neo-Latin studies?
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error clearing conversation:', error);
+            }
+        }
+
+        async function processDocuments() {
+            showLoading(true);
+            try {
+                const response = await fetch('/process_documents', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addMessage('assistant', '📚 Documents have been processed successfully! I now have access to the latest materials.');
+                } else {
+                    addMessage('assistant', 'There was an issue processing the documents: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                addMessage('assistant', 'I encountered an error while processing documents. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Focus on input when page loads
+        window.addEventListener('load', () => {
+            messageInput.focus();
+        });
+    </script>
+</body>
+</html>

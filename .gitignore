@@ -1,0 +1,99 @@
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Database/Storage
+chroma_db/
+*.db
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model files (if they get large)
+*.pkl
+*.model
+*.bin
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Audio files (temporary recordings)
+*.wav
+*.mp3
+*.ogg
+*.webm
+*.m4a
+
+# Test files
+test_*.py
+*_test.py
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation build
+docs/_build/
+.sphinx-build/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Whisper model cache (these can be large)
+~/.cache/whisper/
