@@ -106,10 +106,6 @@
         .message-avatar {
             width: 40px;
             height: 40px;
-            min-width: 40px;
-            min-height: 40px;
-            max-width: 40px;
-            max-height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -117,8 +113,6 @@
             font-weight: bold;
             margin-right: 0.5rem;
             font-family: 'Cinzel', serif;
-            flex-shrink: 0;
-            font-size: 1.2rem;
         }
 
         .message.user .message-avatar {
@@ -126,13 +120,11 @@
             color: var(--renaissance-dark);
             margin-left: 0.5rem;
             margin-right: 0;
-            flex-shrink: 0;
         }
 
         .message.assistant .message-avatar {
             background: var(--renaissance-burgundy);
             color: var(--renaissance-cream);
-            flex-shrink: 0;
         }
 
         .sources {
@@ -225,16 +217,14 @@
         }
 
         .typing-indicator {
-            opacity: 0.7;
-            font-style: italic;
-            color: var(--renaissance-gold);
+            opacity: 0.6;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
         .cursor {
-            animation: blink 1.2s infinite;
+            animation: blink 1s infinite;
             color: var(--renaissance-gold);
-            font-weight: normal;
-            opacity: 0.8;
+            font-weight: bold;
         }
 
         @keyframes spin {
@@ -252,8 +242,8 @@
         }
 
         @keyframes blink {
-            0%, 60% { opacity: 0.8; }
-            61%, 100% { opacity: 0.2; }
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
 
         @media (max-width: 768px) {
@@ -386,13 +376,12 @@
             responseMessageDiv.className = 'message assistant';
             
             const avatar = 'J';
-            const uniqueId = 'streaming-' + Date.now();
             responseMessageDiv.innerHTML = `
                 <div class="d-flex justify-content-start">
                     <div class="message-avatar">${avatar}</div>
                     <div>
-                        <div class="message-bubble" id="${uniqueId}">
-                            <span class="typing-indicator">Thinking...</span>
+                        <div class="message-bubble" id="streamingContent">
+                            <span class="typing-indicator">●●●</span>
                         </div>
                     </div>
                 </div>
@@ -417,8 +406,7 @@
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let accumulatedResponse = '';
-                let firstChunkReceived = false;
-                const streamingContent = document.getElementById(uniqueId);
+                const streamingContent = document.getElementById('streamingContent');
                 
                 function readStream() {
                     return reader.read().then(({ done, value }) => {
@@ -431,30 +419,20 @@
                         const lines = chunk.split('\n');
                         
                         for (const line of lines) {
-                            if (line.startsWith('data: ') && line.trim() !== 'data: ') {
+                            if (line.startsWith('data: ')) {
                                 try {
                                     const data = JSON.parse(line.slice(6));
                                     
                                     if (data.chunk && !data.done) {
-                                        // Clear typing indicator on first chunk
-                                        if (!firstChunkReceived) {
-                                            firstChunkReceived = true;
-                                            if (streamingContent) {
-                                                streamingContent.innerHTML = '';
-                                            }
-                                        }
-                                        
                                         // Add the new chunk to the accumulated response
                                         accumulatedResponse += data.chunk;
-                                        
                                         if (streamingContent) {
-                                            // Show response with a subtle cursor
-                                            streamingContent.innerHTML = accumulatedResponse + '<span class="cursor">▎</span>';
+                                            streamingContent.innerHTML = accumulatedResponse + '<span class="cursor">|</span>';
                                         }
                                         // Auto-scroll to bottom
                                         chatMessages.scrollTop = chatMessages.scrollHeight;
                                     } else if (data.done) {
-                                        // Streaming finished, remove cursor and add sources if available
+                                        // Streaming finished, add sources if available
                                         if (streamingContent) {
                                             streamingContent.innerHTML = accumulatedResponse;
                                         }
@@ -465,16 +443,9 @@
                                         
                                         showLoading(false);
                                         return;
-                                    } else if (data.error) {
-                                        // Handle error case
-                                        if (streamingContent) {
-                                            streamingContent.innerHTML = data.error;
-                                        }
-                                        showLoading(false);
-                                        return;
                                     }
                                 } catch (e) {
-                                    console.error('Error parsing SSE data:', e, 'Line:', line);
+                                    console.error('Error parsing SSE data:', e);
                                 }
                             }
                         }
@@ -488,7 +459,7 @@
             .catch(error => {
                 console.error('Streaming error:', error);
                 showLoading(false);
-                const streamingContent = document.getElementById(uniqueId);
+                const streamingContent = document.getElementById('streamingContent');
                 if (streamingContent) {
                     streamingContent.innerHTML = 'I apologize, but I\'m having trouble connecting right now. Please try again.';
                 }

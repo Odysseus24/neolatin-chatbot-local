@@ -3,35 +3,30 @@ Flask web application for the Jozef Neo-Latin Studies Chatbot.
 Features a Renaissance-inspired Bootstrap interface.
 """
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, Response
 import uuid
 import config
 from src.rag_engine import RAGEngine
-from src.speech_service import SpeechService
 import os
+import json
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# Initialize RAG engine and speech service
+# Initialize RAG engine
 rag_engine = None
-speech_service = None
 
 def initialize_rag_engine():
     """Initialize the RAG engine."""
     global rag_engine
     if rag_engine is None:
-        print("Initializing RAG engine...")
-        rag_engine = RAGEngine()
-        print("RAG engine initialized.")
-
-def initialize_speech_service():
-    """Initialize the speech service."""
-    global speech_service
-    if speech_service is None:
-        print("Initializing speech service...")
-        speech_service = SpeechService()
-        print("Speech service initialized.")
+        try:
+            print("Initializing RAG engine...")
+            rag_engine = RAGEngine()
+            print("RAG engine initialized.")
+        except Exception as e:
+            print(f"Error initializing RAG engine: {e}")
+            rag_engine = None
 
 @app.route('/')
 def index():
@@ -47,7 +42,14 @@ def chat():
         # Initialize RAG engine if not already done
         initialize_rag_engine()
         
+        # Check if RAG engine is properly initialized
+        if rag_engine is None:
+            return jsonify({'error': 'RAG engine not available'}), 500
+        
         data = request.json
+        if data is None:
+            return jsonify({'error': 'No JSON data provided'}), 400
+            
         user_message = data.get('message', '').strip()
         
         if not user_message:
@@ -70,6 +72,83 @@ def chat():
         print(f"Error in chat endpoint: {e}")
         return jsonify({'error': 'An error occurred while processing your message'}), 500
 
+@app.route('/chat/stream', methods=['POST'])
+def chat_stream():
+    """Chat endpoint with streaming response for better performance."""
+    try:
+        # Initialize RAG engine if not already done
+        initialize_rag_engine()
+        
+        if not rag_engine:
+            return jsonify({'error': 'RAG engine not initialized'}), 500
+            
+        # Handle JSON data
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+            
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return jsonify({'error': 'Message cannot be empty'}), 400
+        
+        # Get or create session ID
+        session_id = session.get('session_id', str(uuid.uuid4()))
+        session['session_id'] = session_id
+        
+        def generate():
+            try:
+                if not rag_engine:
+                    yield f"data: {json.dumps({'error': 'RAG engine not available', 'done': True})}\n\n"
+                    return
+                    
+                # Get relevant documents and build prompt
+                relevant_docs = rag_engine.retrieve_relevant_documents(user_message)
+                context = rag_engine.format_context(relevant_docs)
+                conversation_history = rag_engine.memory.get_conversation_history(session_id)
+                prompt = rag_engine.build_prompt(user_message, context, conversation_history)
+                
+                # Stream the response
+                full_response = ""
+                for chunk in rag_engine.generate_response_stream(prompt):
+                    full_response += chunk
+                    # Send each chunk immediately with flush
+                    yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+                
+                # Add to memory
+                rag_engine.memory.add_message(session_id, "user", user_message)
+                rag_engine.memory.add_message(session_id, "assistant", full_response)
+                
+                # Send sources at the end
+                sources_dict = {}
+                for doc in relevant_docs:
+                    source_file = doc.metadata.get('source_file', 'Unknown')
+                    if source_file not in sources_dict:
+                        sources_dict[source_file] = {
+                            "file": source_file,
+                            "content_preview": doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content
+                        }
+                
+                show_sources = rag_engine._should_show_sources(relevant_docs, user_message, full_response)
+                sources = list(sources_dict.values()) if show_sources else []
+                
+                yield f"data: {json.dumps({'sources': sources, 'done': True, 'session_id': session_id})}\n\n"
+                
+            except Exception as e:
+                yield f"data: {json.dumps({'error': f'Error: {str(e)}', 'done': True})}\n\n"
+        
+        return Response(generate(), 
+                       mimetype='text/event-stream',
+                       headers={
+                           'Cache-Control': 'no-cache',
+                           'Connection': 'keep-alive',
+                           'Access-Control-Allow-Origin': '*'
+                       })
+        
+    except Exception as e:
+        print(f"Error in streaming chat endpoint: {e}")
+        return jsonify({'error': 'An error occurred while processing your message'}), 500
+
 @app.route('/clear', methods=['POST'])
 def clear_conversation():
     """Clear conversation history."""
@@ -82,82 +161,15 @@ def clear_conversation():
         print(f"Error clearing conversation: {e}")
         return jsonify({'error': 'Failed to clear conversation'}), 500
 
-@app.route('/process_documents', methods=['POST'])
-def process_documents():
-    """Process PDF documents."""
-    try:
-        initialize_rag_engine()
-        success = rag_engine.process_documents()
-        if success:
-            return jsonify({'status': 'success', 'message': 'Documents processed successfully'})
-        else:
-            return jsonify({'status': 'error', 'message': 'Failed to process documents'}), 500
-    except Exception as e:
-        print(f"Error processing documents: {e}")
-        return jsonify({'error': 'An error occurred while processing documents'}), 500
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
     return jsonify({'status': 'healthy'})
 
-@app.route('/transcribe', methods=['POST'])
-def transcribe_audio():
-    """Transcribe audio using Whisper."""
-    try:
-        # Initialize speech service if not already done
-        initialize_speech_service()
-        
-        # Check if audio file is present
-        if 'audio' not in request.files:
-            return jsonify({'error': 'No audio file provided'}), 400
-        
-        audio_file = request.files['audio']
-        if audio_file.filename == '':
-            return jsonify({'error': 'No audio file selected'}), 400
-        
-        # Read audio data
-        audio_data = audio_file.read()
-        content_type = audio_file.content_type or 'audio/wav'
-        
-        # Validate audio format
-        if not speech_service.validate_audio_format(audio_data):
-            # Try to process anyway as Whisper is quite robust
-            print(f"Warning: Audio format validation failed for {content_type}")
-        
-        # Transcribe audio
-        result = speech_service.transcribe_audio(audio_data, content_type)
-        
-        if result['success']:
-            return jsonify({
-                'success': True,
-                'transcript': result['transcript'],
-                'confidence': result['confidence'],
-                'language': result['language'],
-                'duration': result.get('duration', 0.0)
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': result.get('error', 'Transcription failed')
-            }), 500
-            
-    except Exception as e:
-        print(f"Error in transcribe endpoint: {e}")
-        return jsonify({'error': 'An error occurred during transcription'}), 500
-
-@app.route('/speech/formats')
-def get_supported_formats():
-    """Get supported audio formats for speech recognition."""
-    try:
-        initialize_speech_service()
-        return jsonify({
-            'formats': speech_service.get_supported_formats(),
-            'preferred': 'audio/wav'
-        })
-    except Exception as e:
-        print(f"Error getting supported formats: {e}")
-        return jsonify({'error': 'Could not get supported formats'}), 500
+@app.route('/test')
+def test_streaming():
+    """Test streaming page."""
+    return render_template('test_streaming.html')
 
 if __name__ == '__main__':
     print("Starting Jozef Neo-Latin Studies Chatbot...")

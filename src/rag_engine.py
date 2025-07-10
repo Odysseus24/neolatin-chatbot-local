@@ -227,6 +227,30 @@ class RAGEngine:
             print(f"Error generating response: {e}")
             return "I apologize, but I'm having trouble generating a response right now. Please try again."
     
+    def generate_response_stream(self, prompt: str):
+        """Generate streaming response using Ollama for better perceived performance."""
+        try:
+            stream = self.ollama_client.generate(
+                model=config.OLLAMA_MODEL,
+                prompt=prompt,
+                stream=True,
+                options={
+                    'temperature': config.TEMPERATURE,
+                    'num_predict': config.MAX_TOKENS,
+                    'stop': ['Human:', 'Assistant:']
+                }
+            )
+            
+            for chunk in stream:
+                if 'response' in chunk:
+                    yield chunk['response']
+                if chunk.get('done', False):
+                    break
+                    
+        except Exception as e:
+            print(f"Error generating streaming response: {e}")
+            yield "I apologize, but I'm having trouble generating a response right now. Please try again."
+
     def chat(self, user_query: str, session_id: str = "default") -> Dict[str, Any]:
         """Main chat function that handles the complete RAG pipeline."""
         
