@@ -1,6 +1,6 @@
 # Jozef - Neo-Latin Studies Chatbot
 
-A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-Latin Studies, powered by Ollama, Langchain, Chroma vector database, and featuring a Renaissance-inspired Bootstrap interface with advanced speech capabilities.
+A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-Latin Studies, powered by Ollama, Langchain, Chroma vector database, and featuring a Renaissance-inspired Bootstrap interface with real-time streaming responses.
 
 ## ✨ Features
 
@@ -10,9 +10,8 @@ A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-
 - **🎨 Renaissance-Inspired UI**: Clean, scholarly interface with period-appropriate design
 - **📚 Source Attribution**: Shows which documents informed each response (when relevant)
 - **🔒 Privacy-First**: Uses local Ollama LLM server - no data sent to external APIs
-- **🎤 Speech Recognition**: High-quality Whisper-based speech input with automatic silence detection
-- **🔊 Speech Synthesis**: Natural text-to-speech output with voice selection
-- **⚡ Real-time Processing**: Fast response times with conversational memory
+- **⚡ Real-time Streaming**: Smooth, progressive response streaming with optimized token limits
+- **� Clean Chat Experience**: Text-only interface optimized for academic research
 
 ## 🛠️ Prerequisites
 
@@ -25,7 +24,7 @@ A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-
    ollama serve
    
    # Pull the required model
-   ollama pull gemma3
+   ollama pull llama3.1
    ```
 
 2. **Python Environment**: Python 3.8+ with virtual environment support
@@ -62,16 +61,21 @@ Copy `.env.example` to `.env` and customize settings:
 ```env
 # Ollama Settings
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=gemma3  # Change to your preferred model
+OLLAMA_MODEL=llama3.1  # Change to your preferred model
 
 # Flask Settings  
 FLASK_HOST=127.0.0.1
-FLASK_PORT=5000
+FLASK_PORT=8080
 
 # Document Settings
 PDF_DIRECTORY=./my_pdfs
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
+CHUNK_SIZE=800
+CHUNK_OVERLAP=100
+
+# Chat Settings
+MAX_CONVERSATION_HISTORY=5
+TEMPERATURE=0.3
+MAX_TOKENS=1024  # Optimized for complete responses
 ```
 
 ## 🎯 Usage
@@ -90,19 +94,15 @@ cp your_neolatin_handbook.pdf my_pdfs/
 python app.py
 ```
 
-Then open your browser to: `http://localhost:5000`
+Then open your browser to: `http://localhost:8080`
 
-### 3. Using Speech Features
+### 3. Using the Chat Interface
 
-- **🎤 Speech Input**: Click the microphone button to speak your questions
-  - Automatically stops after 3 seconds of silence
-  - Uses high-quality Whisper transcription
-  - Supports multiple languages
-
-- **🔊 Speech Output**: Click the speaker button on any response to hear it
-  - Natural text-to-speech synthesis
-  - Auto-speak mode available
-  - Adjustable voice settings
+- **💬 Text Chat**: Type your questions about Neo-Latin studies in the input field
+  - Supports real-time streaming responses with typing indicators
+  - Automatic source attribution when relevant
+  - Conversation memory for context-aware discussions
+  - Clean, academic-focused interface
 
 ### 4. Process Documents
 
@@ -126,17 +126,22 @@ ragbot/
 ├── config.py                   # Configuration settings  
 ├── requirements.txt            # Python dependencies
 ├── .env.example               # Environment variables template
+├── .env                       # Environment variables (local)
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file
 ├── my_pdfs/                   # PDF documents directory
 │   └── test.pdf              # Sample document
 ├── src/
 │   ├── document_processor.py  # PDF processing and vectorization
-│   ├── rag_engine.py         # RAG logic and conversation management
-│   └── speech_service.py     # Whisper speech recognition
+│   └── rag_engine.py         # RAG logic and conversation management
 ├── templates/
-│   └── index.html            # Renaissance-inspired web interface
-└── chroma_db/                # Vector database (auto-created)
+│   ├── index.html            # Main Renaissance-inspired web interface
+│   └── test_streaming.html   # Streaming test interface
+├── static/                    # Static web assets
+│   ├── css/
+│   └── js/
+├── chroma_db/                # Vector database (auto-created)
+└── tts_cache/                # Cached files (legacy, can be removed)
 ```
 
 ## 🔧 Key Components
@@ -151,18 +156,15 @@ ragbot/
 - Manages conversation memory
 - Retrieves relevant document chunks
 - Integrates with Ollama for response generation
+- Provides streaming response capabilities
 - Formats context for optimal results
-
-### Speech Service (`src/speech_service.py`)
-- Whisper-based high-quality speech recognition
-- Audio preprocessing and enhancement
-- Multiple audio format support
 
 ### Web Interface (`templates/index.html`)
 - Renaissance-inspired design with Bootstrap
-- Real-time chat interface with speech I/O
-- Voice activity detection
+- Real-time streaming chat interface with typing indicators
+- Clean, academic-focused user experience
 - Source attribution display
+- Responsive design for mobile and desktop
 
 ## ⚙️ Advanced Configuration
 
@@ -172,11 +174,11 @@ Change the Ollama model in `.env`:
 OLLAMA_MODEL=mistral  # or codellama, neural-chat, etc.
 ```
 
-### Speech Settings
-Adjust speech recognition sensitivity:
-```javascript
-// In browser console
-setSilenceDetection(0.01, 2000);  // threshold, timeout_ms
+### Streaming Settings
+Adjust response streaming behavior:
+```env
+MAX_TOKENS=2048      # Larger token limit for longer responses
+TEMPERATURE=0.5      # Higher creativity vs consistency
 ```
 
 ### Embedding Models
@@ -188,27 +190,8 @@ EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"  # Higher quality
 ### Chunk Settings
 Adjust document chunking in `.env`:
 ```env
-CHUNK_SIZE=1500      # Larger chunks for more context
-CHUNK_OVERLAP=300    # More overlap for better continuity
-```
-
-### Custom Models
-Change the Ollama model in `.env`:
-```env
-OLLAMA_MODEL=mistral  # or codellama, neural-chat, etc.
-```
-
-### Embedding Models
-Modify the embedding model in `config.py`:
-```python
-EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"  # Higher quality
-```
-
-### Chunk Settings
-Adjust document chunking in `.env`:
-```env
-CHUNK_SIZE=1500      # Larger chunks for more context
-CHUNK_OVERLAP=300    # More overlap for better continuity
+CHUNK_SIZE=1200      # Larger chunks for more context
+CHUNK_OVERLAP=200    # More overlap for better continuity
 ```
 
 ## 🐛 Troubleshooting
@@ -218,7 +201,7 @@ CHUNK_OVERLAP=300    # More overlap for better continuity
 1. **Ollama Connection Error**:
    - Ensure Ollama is running: `ollama serve`
    - Check if the model is available: `ollama list`
-   - Pull the model if needed: `ollama pull gemma3`
+   - Pull the model if needed: `ollama pull llama3.1`
    - Verify the URL in `.env`
 
 2. **No Documents Found**:
@@ -226,12 +209,18 @@ CHUNK_OVERLAP=300    # More overlap for better continuity
    - Ensure files have `.pdf` extension
    - Run document processor manually to see errors
 
-3. **Speech Recognition Issues**:
-   - Check microphone permissions in browser
-   - Try different browsers (Chrome/Edge work best)
-   - Adjust silence detection: `setSilenceDetection(0.01, 3000)`
+3. **Streaming Issues**:
+   - Check browser console for JavaScript errors
+   - Try refreshing the page
+   - Verify `/chat/stream` endpoint is responding
+   - Check Flask debug output for server errors
 
-4. **Memory Issues**:
+4. **Incomplete Responses**:
+   - Increase `MAX_TOKENS` in `.env` (current: 1024)
+   - Reduce `CHUNK_SIZE` to leave more room for responses
+   - Check Ollama model performance with `ollama show llama3.1`
+
+5. **Memory Issues**:
    - Reduce `CHUNK_SIZE` in `.env`
    - Limit `MAX_CONVERSATION_HISTORY`
    - Restart the application periodically
@@ -290,7 +279,7 @@ To add new features or improve existing functionality:
 
 1. **Document processing enhancements**: `src/document_processor.py`
 2. **RAG improvements**: `src/rag_engine.py`  
-3. **Speech features**: `src/speech_service.py`
+3. **Streaming optimizations**: Response streaming logic in `app.py`
 4. **UI/UX updates**: `templates/index.html`
 5. **Configuration options**: `config.py`
 
@@ -307,7 +296,7 @@ This project is intended for academic and research purposes in Neo-Latin Studies
 - [ ] Install dependencies: `pip install -r requirements.txt`
 - [ ] Copy `.env.example` to `.env`
 - [ ] Install and start Ollama: `ollama serve`
-- [ ] Pull model: `ollama pull gemma3`
+- [ ] Pull model: `ollama pull llama3.1`
 - [ ] Add PDFs to `my_pdfs/`
 - [ ] Run: `python app.py`
-- [ ] Open `http://localhost:5000`
+- [ ] Open `http://localhost:8080`
