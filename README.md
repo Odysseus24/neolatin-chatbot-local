@@ -65,7 +65,7 @@ OLLAMA_MODEL=llama3.1  # Change to your preferred model
 
 # Flask Settings  
 FLASK_HOST=127.0.0.1
-FLASK_PORT=8080
+FLASK_PORT=5001
 
 # Document Settings
 PDF_DIRECTORY=./my_pdfs
@@ -94,7 +94,7 @@ cp your_neolatin_handbook.pdf my_pdfs/
 python app.py
 ```
 
-Then open your browser to: `http://localhost:8080`
+Then open your browser to: `http://localhost:5001`
 
 ### 3. Using the Chat Interface
 
@@ -299,4 +299,4 @@ This project is intended for academic and research purposes in Neo-Latin Studies
 - [ ] Pull model: `ollama pull llama3.1`
 - [ ] Add PDFs to `my_pdfs/`
 - [ ] Run: `python app.py`
-- [ ] Open `http://localhost:8080`
+- [ ] Open `http://localhost:5001`
