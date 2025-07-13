@@ -51,6 +51,28 @@
             opacity: 0.9;
         }
 
+        .header .info-text {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-top: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+
+        .header .info-text a {
+            color: var(--renaissance-gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .header .info-text a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
         .chat-container {
             background: white;
             border-radius: 15px;
@@ -280,7 +302,12 @@
     <div class="header">
         <div class="container text-center">
             <h1><i class="bi bi-book-half"></i> Jozef</h1>
-            <p class="subtitle">Your Neo-Latin Studies Assistant</p>
+            <p class="subtitle">Your Guide to the Neo-Latin World</p>
+            <p class="info-text">
+                I have knowledge of Neo-Latin handbooks, companions and encyclopedias. 
+                If you want to ask questions about your own documents, I recommend <a href="https://notebooklm.google" target="_blank">NotebookLM</a>. 
+                For dictionaries use <a href="http://logeion.uchicago.edu" target="_blank">Logeion</a> and the <a href="http://nlw.renaessancestudier.org" target="_blank">Neulateinische Wortliste</a>. 
+            </p>
         </div>
     </div>
 
@@ -297,7 +324,7 @@
                     <div class="d-flex align-items-start">
                         <div class="message-avatar">J</div>
                         <div class="message-bubble">
-                            Salve! I'm Jozef, your guide to the Neo-Latin world. How may I assist you today?
+                            Salve! How may I assist you today?
                         </div>
                     </div>
                 </div>
