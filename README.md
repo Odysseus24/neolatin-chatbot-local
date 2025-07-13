@@ -87,7 +87,24 @@ Place your Neo-Latin handbooks (OCRed PDFs) in the `my_pdfs` directory:
 cp your_neolatin_handbook.pdf my_pdfs/
 ```
 
-### 2. Start the Application
+### 2. Vectorize Documents (Required Before First Use)
+
+**Important**: Before starting the chatbot, you must vectorize your documents:
+
+```bash
+# Process all PDF documents and create vector database
+python vectorize.py
+
+# Optional: Force rebuild of vector database
+python vectorize.py --force-reindex
+
+# Optional: Verify vectorization worked
+python vectorize.py --verify-only
+```
+
+See the [Vectorization Guide](VECTORIZATION_GUIDE.md) for detailed instructions.
+
+### 3. Start the Application
 
 ```bash
 # Start the web application
@@ -96,7 +113,7 @@ python app.py
 
 Then open your browser to: `http://localhost:5001`
 
-### 3. Using the Chat Interface
+### 4. Using the Chat Interface
 
 - **💬 Text Chat**: Type your questions about Neo-Latin studies in the input field
   - Supports real-time streaming responses with typing indicators
@@ -243,7 +260,67 @@ This chatbot is designed for scholarly research in Neo-Latin Studies. It:
 - Preserves conversation context for extended research sessions
 - Protects privacy with local processing
 
-## 🔄 Development Workflow
+## � Production Deployment
+
+### Pre-production Vectorization
+
+For production deployment, vectorize documents beforehand to improve startup performance:
+
+```bash
+# On your development machine:
+# 1. Add all production PDF documents to my_pdfs/
+cp production_handbooks/*.pdf my_pdfs/
+
+# 2. Vectorize all documents
+python vectorize.py
+
+# 3. Verify vectorization
+python vectorize.py --verify-only
+
+# 4. The chroma_db/ directory now contains the production-ready vector database
+```
+
+### Production Server Setup
+
+```bash
+# 1. Copy project to production server (excluding .env and chroma_db)
+rsync -av --exclude='.env' --exclude='chroma_db' ragbot/ production_server:chatbot/
+
+# 2. Copy the vectorized database
+rsync -av chroma_db/ production_server:chatbot/chroma_db/
+
+# 3. On production server:
+cd chatbot
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 4. Configure production environment
+cp .env.example .env
+# Edit .env with production settings
+
+# 5. Start the application
+python app.py
+```
+
+### Docker Deployment (Optional)
+
+Create a `Dockerfile`:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+# Vector database should be pre-built and included in the image
+
+EXPOSE 5001
+CMD ["python", "app.py"]
+```
+
+## �🔄 Development Workflow
 
 ### Working Locally
 ```bash
@@ -296,7 +373,8 @@ This project is intended for academic and research purposes in Neo-Latin Studies
 - [ ] Install dependencies: `pip install -r requirements.txt`
 - [ ] Copy `.env.example` to `.env`
 - [ ] Install and start Ollama: `ollama serve`
-- [ ] Pull model: `ollama pull llama3.1`
+- [ ] Pull models: `ollama pull llama3.1` and `ollama pull nomic-embed-text`
 - [ ] Add PDFs to `my_pdfs/`
+- [ ] **Vectorize documents: `python vectorize.py`**
 - [ ] Run: `python app.py`
 - [ ] Open `http://localhost:5001`

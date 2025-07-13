@@ -52,14 +52,24 @@ class ConversationMemory:
 class RAGEngine:
     """Main RAG engine that combines document retrieval with language generation."""
     
-    def __init__(self):
-        """Initialize the RAG engine."""
+    def __init__(self, auto_process_documents: bool = False):
+        """
+        Initialize the RAG engine.
+        
+        Args:
+            auto_process_documents: If True, automatically process documents during initialization.
+                                  Should be False in production (documents should be pre-vectorized).
+        """
         self.document_processor = DocumentProcessor()
         self.memory = ConversationMemory()
         self.ollama_client = ollama.Client(host=config.OLLAMA_BASE_URL)
+        self.auto_process_documents = auto_process_documents
         
         # Test Ollama connection
         self._test_ollama_connection()
+        
+        # Check if vector store is ready
+        self._check_vector_store_status()
     
     def _test_ollama_connection(self):
         """Test connection to Ollama server."""
@@ -88,6 +98,34 @@ class RAGEngine:
         except Exception as e:
             print(f"Error connecting to Ollama: {e}")
             print("Make sure Ollama is running and accessible")
+    
+    def _check_vector_store_status(self):
+        """Check if vector store is ready and contains documents."""
+        if not self.document_processor.vector_store:
+            print("⚠️  Warning: Vector store not initialized. Documents may not be available for retrieval.")
+            if self.auto_process_documents:
+                print("Auto-processing documents...")
+                self.process_documents()
+            else:
+                print("Run 'python vectorize.py' to process documents before starting the chatbot.")
+            return False
+        
+        try:
+            doc_count = len(self.document_processor.vector_store.get()['ids']) if self.document_processor.vector_store.get()['ids'] else 0
+            if doc_count == 0:
+                print("⚠️  Warning: Vector store is empty. No documents available for retrieval.")
+                if self.auto_process_documents:
+                    print("Auto-processing documents...")
+                    self.process_documents()
+                else:
+                    print("Run 'python vectorize.py' to process documents.")
+                return False
+            else:
+                print(f"✅ Vector store ready with {doc_count} document chunks")
+                return True
+        except Exception as e:
+            print(f"⚠️  Error checking vector store status: {e}")
+            return False
     
     def _filter_by_content_relevance(self, documents: List[Document], query: str) -> List[Document]:
         """Filter documents by content relevance as a fallback method."""
@@ -306,7 +344,8 @@ class RAGEngine:
 
 def main():
     """Main function for testing the RAG engine."""
-    rag = RAGEngine()
+    # Enable auto-processing for development/testing
+    rag = RAGEngine(auto_process_documents=True)
     
     # Process documents if needed
     print("Processing documents...")

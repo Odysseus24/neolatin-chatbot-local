@@ -19,8 +19,14 @@ import config
 class DocumentProcessor:
     """Handles document processing and vector storage operations."""
     
-    def __init__(self):
-        """Initialize the document processor with embeddings and vector store."""
+    def __init__(self, auto_initialize: bool = True):
+        """
+        Initialize the document processor with embeddings and vector store.
+        
+        Args:
+            auto_initialize: If True, attempt to initialize vector store on startup.
+                           If False, vector store will be initialized on demand.
+        """
         self.embeddings = OllamaEmbeddings(
             base_url=config.OLLAMA_BASE_URL,
             model=config.EMBEDDING_MODEL
@@ -34,15 +40,29 @@ class DocumentProcessor:
         )
         
         self.vector_store = None
-        self._initialize_vector_store()
+        if auto_initialize:
+            self._initialize_vector_store()
     
-    def _initialize_vector_store(self):
-        """Initialize or load existing Chroma vector store."""
+    def _initialize_vector_store(self, create_if_missing: bool = False):
+        """
+        Initialize or load existing Chroma vector store.
+        
+        Args:
+            create_if_missing: If True, create a new vector store if none exists.
+                             If False, only load existing vector stores.
+        """
         try:
-            # Create directory if it doesn't exist
-            os.makedirs(config.CHROMA_PERSIST_DIRECTORY, exist_ok=True)
+            # Check if persist directory exists
+            if not os.path.exists(config.CHROMA_PERSIST_DIRECTORY):
+                if create_if_missing:
+                    os.makedirs(config.CHROMA_PERSIST_DIRECTORY, exist_ok=True)
+                    print(f"Created vector store directory: {config.CHROMA_PERSIST_DIRECTORY}")
+                else:
+                    print(f"Vector store directory does not exist: {config.CHROMA_PERSIST_DIRECTORY}")
+                    print("Run 'python vectorize.py' to create and populate the vector store.")
+                    return False
             
-            # Initialize vector store
+            # Initialize vector store (this will load existing data if present)
             self.vector_store = Chroma(
                 collection_name=config.COLLECTION_NAME,
                 embedding_function=self.embeddings,
@@ -52,15 +72,26 @@ class DocumentProcessor:
             # Test if vector store was properly initialized by trying to get collection count
             try:
                 doc_count = len(self.vector_store.get()['ids']) if self.vector_store.get()['ids'] else 0
-                print(f"Vector store initialized successfully with {doc_count} documents")
+                if doc_count > 0:
+                    print(f"Vector store loaded successfully with {doc_count} documents")
+                else:
+                    print("Vector store loaded but is empty")
+                    if not create_if_missing:
+                        print("Run 'python vectorize.py' to populate the vector store.")
                 return True
             except Exception as e:
                 print(f"Vector store created but cannot access collection: {e}")
+                if not create_if_missing:
+                    print("This might indicate the vector store needs to be recreated.")
+                    print("Run 'python vectorize.py --force-reindex' to rebuild it.")
                 raise e
                 
         except Exception as e:
             print(f"Error initializing vector store: {e}")
-            print("This might be normal for first-time setup. Continuing...")
+            if create_if_missing:
+                print("This might be normal for first-time setup. Continuing...")
+            else:
+                print("Vector store not available. Run 'python vectorize.py' to create it.")
             # Set vector_store to None on failure
             self.vector_store = None
             return False
@@ -117,11 +148,13 @@ class DocumentProcessor:
             return False
         
         if not self.vector_store:
-            print("Vector store not initialized - attempting to reinitialize...")
-            self._initialize_vector_store()
+            print("Vector store not initialized - attempting to initialize with creation enabled...")
+            self._initialize_vector_store(create_if_missing=True)
             if not self.vector_store:
                 print("Failed to initialize vector store - creating new one for this session...")
                 try:
+                    # Ensure directory exists
+                    os.makedirs(config.CHROMA_PERSIST_DIRECTORY, exist_ok=True)
                     self.vector_store = Chroma(
                         collection_name=config.COLLECTION_NAME,
                         embedding_function=self.embeddings,
@@ -216,7 +249,8 @@ class DocumentProcessor:
 
 def main():
     """Main function for testing document processing."""
-    processor = DocumentProcessor()
+    # Enable auto-initialization for testing
+    processor = DocumentProcessor(auto_initialize=True)
     success = processor.process_all_pdfs()
     
     if success:
