@@ -167,4 +167,14 @@ The chatbot (`app.py`) will automatically:
 3. Warn if no vector database is found
 4. Provide instructions to run vectorization if needed
 
+**Important**: After adding new documents with `python vectorize.py`, you must restart the chatbot application to load the updated vector database:
+
+```bash
+# Stop the chatbot (Ctrl+C in the terminal where it's running)
+# Then restart it
+python app.py
+```
+
+The chatbot loads the vector database only once during startup, so new documents won't be available until restart.
+
 This separation ensures fast startup times and predictable performance in production environments.

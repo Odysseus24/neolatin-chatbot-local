@@ -1,14 +1,14 @@
 # Jozef - Neo-Latin Studies Chatbot
 
-A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-Latin Studies, powered by Ollama, Langchain, Chroma vector database, and featuring a Renaissance-inspired Bootstrap interface with real-time streaming responses.
+A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-Latin Studies, powered by Ollama, Langchain, Chroma vector database, and featuring a responsive Bootstrap interface with real-time streaming responses.
 
 ## ✨ Features
 
 - **🤖 Intelligent Document Processing**: Automatically processes OCRed PDFs of Neo-Latin handbooks
 - **🔍 Advanced RAG System**: Combines document retrieval with conversational AI using Chroma vector database
 - **💾 Memory Management**: Maintains conversation context for natural dialogue
-- **🎨 Renaissance-Inspired UI**: Clean, scholarly interface with period-appropriate design
-- ** Privacy-First**: Uses local Ollama LLM server - no data sent to external APIs
+- **🎨 Clean Web Interface**: Professional, scholarly interface with responsive design
+- **🔒 Privacy-First**: Uses local Ollama LLM server - no data sent to external APIs
 - **⚡ Real-time Streaming**: Smooth, progressive response streaming with optimized token limits
 - **🎯 Smart Context Usage**: Clearly indicates when responding from handbooks vs. general knowledge
 - **📝 Clean Chat Experience**: Text-only interface optimized for academic research
@@ -87,7 +87,7 @@ Place your Neo-Latin handbooks (OCRed PDFs) in the `my_pdfs` directory:
 cp your_neolatin_handbook.pdf my_pdfs/
 ```
 
-**📄 Copyright Protection**: PDF files in `my_pdfs/` are automatically excluded from Git commits to respect copyright. The directory structure is preserved with a `.gitkeep` file. The existing `test.pdf` remains tracked as a sample document, but any new PDF files you add will be automatically ignored.
+**📄 Copyright Protection**: PDF files in `my_pdfs/` are automatically excluded from Git commits to respect copyright. The directory structure is preserved with a `.gitkeep` file. The existing sample documents remain tracked as reference documents, but any new PDF files you add will be automatically ignored.
 
 ### 2. Vectorize Documents (Required Before First Use)
 
@@ -106,6 +106,11 @@ python vectorize.py --verify-only
 
 See the [Vectorization Guide](VECTORIZATION_GUIDE.md) for detailed instructions.
 
+**🔄 Adding New Documents**: To add new PDF documents to an existing setup:
+1. Copy new PDFs to `my_pdfs/` directory
+2. Run `python vectorize.py` (only processes new documents)
+3. **Restart the chatbot** (`Ctrl+C` then `python app.py`) to load updated database
+
 ### 3. Start the Application
 
 ```bash
@@ -122,7 +127,7 @@ Then open your browser to: `http://localhost:5001`
   - Clear indication when responses use handbooks ("According to my handbooks...")
   - Transparent fallback to general knowledge when handbooks don't contain relevant info
   - Conversation memory for context-aware discussions
-  - Clean, academic-focused interface without visual clutter
+  - Clean, academic-focused interface
 
 ### 4. Process Documents
 
@@ -154,12 +159,13 @@ ragbot/
 ├── README.md                  # This file
 ├── my_pdfs/                   # PDF documents directory
 │   ├── .gitkeep              # Preserves directory in Git
-│   └── test.pdf              # Sample document (tracked in Git for demo purposes)
+│   ├── Knight_Tilg 2018.pdf  # Sample document (tracked in Git for demo purposes)
+│   └── Moul 2017.pdf         # Additional sample document
 ├── src/
 │   ├── document_processor.py  # PDF processing and vectorization core
 │   └── rag_engine.py         # RAG logic and conversation management
 ├── templates/
-│   ├── index.html            # Main Renaissance-inspired web interface
+│   ├── index.html            # Main web interface
 │   └── index_clean.html      # Alternative clean interface (unused)
 ├── static/                    # Static web assets
 │   ├── css/
@@ -189,9 +195,9 @@ ragbot/
 - Command-line interface with multiple options
 
 ### Web Interface (`templates/index.html`)
-- Renaissance-inspired design with Bootstrap
+- Clean, responsive design with Bootstrap
 - Real-time streaming chat interface with typing indicators
-- Clean, academic-focused user experience
+- Academic-focused user experience
 - Smart response attribution system
 - Responsive design for mobile and desktop
 
@@ -260,6 +266,11 @@ CHUNK_OVERLAP=200    # More overlap for better continuity
    - Limit `MAX_CONVERSATION_HISTORY`
    - Restart the application periodically
 
+7. **New Documents Not Available**:
+   - After adding PDFs and running `python vectorize.py`, restart the chatbot
+   - Check that vectorization completed successfully with no errors
+   - Verify new document count with `python vectorize.py --verify-only`
+
 ### Debug Mode
 
 Enable debug mode in `.env`:
@@ -274,7 +285,7 @@ View detailed logs in the terminal where you run `python app.py`.
 ### PDF Document Handling
 - **Local Storage**: Add your PDF documents to the `my_pdfs/` directory for processing
 - **Git Protection**: All **new** PDF files in `my_pdfs/` are automatically excluded from Git commits
-- **Sample Document**: The existing `test.pdf` remains tracked as a reference/demo document
+- **Sample Document**: The existing sample documents remain tracked as reference/demo documents
 - **Directory Preservation**: The `my_pdfs/` folder structure is maintained via `.gitkeep`
 - **Privacy First**: Your research documents remain local and are never pushed to remote repositories
 
@@ -420,3 +431,4 @@ This project is intended for academic and research purposes in Neo-Latin Studies
 - [ ] **Vectorize documents: `python vectorize.py`**
 - [ ] Run: `python app.py`
 - [ ] Open `http://localhost:5001`
+- [ ] **When adding new PDFs**: Re-run `python vectorize.py` and restart the app
