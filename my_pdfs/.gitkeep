@@ -1,0 +1,7 @@
+# This file ensures the my_pdfs directory is included in the repository
+# while PDF files are ignored for copyright protection.
+# 
+# To use this chatbot:
+# 1. Add your Neo-Latin PDF documents to this directory
+# 2. Run: python vectorize.py
+# 3. Start the chatbot: python app.py

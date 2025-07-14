@@ -157,26 +157,6 @@
             flex-shrink: 0;
         }
 
-        .sources {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            background: rgba(212, 175, 55, 0.1);
-            border-radius: 8px;
-            border-left: 3px solid var(--renaissance-gold);
-            font-size: 0.9rem;
-        }
-
-        .sources-title {
-            font-weight: 600;
-            color: var(--renaissance-brown);
-            margin-bottom: 0.25rem;
-        }
-
-        .source-item {
-            margin: 0.25rem 0;
-            color: var(--renaissance-dark);
-        }
-
         .input-area {
             padding: 1rem 1.5rem;
             background: linear-gradient(to right, var(--parchment) 0%, white 100%);
@@ -302,7 +282,7 @@
     <div class="header">
         <div class="container text-center">
             <h1><i class="bi bi-book-half"></i> Jozef</h1>
-            <p class="subtitle">Your Guide to the Neo-Latin World</p>
+            <p class="subtitle">Your guide to the Neo-Latin World</p>
             <p class="info-text">
                 I have knowledge of Neo-Latin handbooks, companions and encyclopedias. 
                 If you want to ask questions about your own documents relating to Neo-Latin (e.g. PDFs or images of early modern prints), I recommend <a href="https://notebooklm.google" target="_blank">NotebookLM</a>. 
@@ -486,10 +466,6 @@
                                             streamingContent.innerHTML = accumulatedResponse;
                                         }
                                         
-                                        if (data.sources && data.sources.length > 0) {
-                                            addSourcesToMessage(responseMessageDiv, data.sources);
-                                        }
-                                        
                                         showLoading(false);
                                         return;
                                     } else if (data.error) {
@@ -522,26 +498,7 @@
             });
         }
 
-        function addSourcesToMessage(messageDiv, sources) {
-            const sourcesHtml = `
-                <div class="sources">
-                    <div class="sources-title"><i class="bi bi-book"></i> Sources:</div>
-                    ${sources.map(source => `
-                        <div class="source-item">
-                            <strong>${source.file}</strong>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            // Find the message content div and append sources
-            const contentDiv = messageDiv.querySelector('.message-bubble').parentNode;
-            if (contentDiv) {
-                contentDiv.insertAdjacentHTML('beforeend', sourcesHtml);
-            }
-        }
-
-        function addMessage(role, content, sources = null) {
+        function addMessage(role, content) {
             if (!chatMessages) {
                 console.error('chatMessages element not found!');
                 return;
@@ -553,26 +510,11 @@
             const avatar = role === 'user' ? 'U' : 'J';
             const alignClass = role === 'user' ? 'justify-content-end' : 'justify-content-start';
             
-            let sourcesHtml = '';
-            if (sources && sources.length > 0) {
-                sourcesHtml = `
-                    <div class="sources">
-                        <div class="sources-title"><i class="bi bi-book"></i> Sources:</div>
-                        ${sources.map(source => `
-                            <div class="source-item">
-                                <strong>${source.file}</strong>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
             messageDiv.innerHTML = `
                 <div class="d-flex ${alignClass}">
                     ${role === 'assistant' ? `<div class="message-avatar">${avatar}</div>` : ''}
                     <div>
                         <div class="message-bubble">${content}</div>
-                        ${sourcesHtml}
                     </div>
                     ${role === 'user' ? `<div class="message-avatar">${avatar}</div>` : ''}
                 </div>

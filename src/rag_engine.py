@@ -144,62 +144,6 @@ class RAGEngine:
                 relevant_docs.append(doc)
         
         return relevant_docs
-    
-    def _should_show_sources(self, documents: List[Document], query: str, response: str) -> bool:
-        """Determine if sources should be shown based on content relevance."""
-        if not documents:
-            return False
-        
-        # Check if the response likely used the document content
-        query_lower = query.lower()
-        response_lower = response.lower()
-        
-        # First check: Is this a Neo-Latin related query?
-        neo_latin_keywords = ['neo-latin', 'neolatin', 'latin', 'renaissance', 'literature', 
-                             'petrarch', 'humanist', 'classical', 'manuscript', 'poetry', 
-                             'prose', 'scholarly', 'studies', 'fifteenth', 'sixteenth', 
-                             'seventeenth', 'eighteenth', 'century', 'medieval', 'humanistic']
-        
-        query_has_academic_keywords = any(keyword in query_lower for keyword in neo_latin_keywords)
-        
-        # If the query is clearly not academic/Neo-Latin related, don't show sources
-        general_keywords = ['weather', 'time', 'today', 'tomorrow', 'how are you', 
-                           'hello', 'hi', 'thanks', 'thank you', 'goodbye', 'bye',
-                           'current', 'news', 'politics', 'sports', 'food', 'cooking']
-        
-        if any(keyword in query_lower for keyword in general_keywords):
-            return False
-        
-        # Second check: Does the response contain specific information that could come from documents?
-        response_has_specific_info = any(keyword in response_lower for keyword in neo_latin_keywords)
-        
-        # Third check: Look for overlapping content between documents and response
-        has_content_overlap = False
-        for doc in documents:
-            doc_content_lower = doc.page_content.lower()
-            
-            # Check for significant word overlap (5+ words in common)
-            doc_words = set(doc_content_lower.split())
-            response_words = set(response_lower.split())
-            
-            # Remove common words
-            common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 
-                           'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were',
-                           'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
-                           'could', 'should', 'can', 'may', 'might', 'this', 'that',
-                           'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they'}
-            
-            doc_meaningful_words = doc_words - common_words
-            response_meaningful_words = response_words - common_words
-            
-            overlap = len(doc_meaningful_words.intersection(response_meaningful_words))
-            
-            if overlap >= 3:  # At least 3 meaningful words in common
-                has_content_overlap = True
-                break
-        
-        # Show sources only if query is academic AND (response has specific info OR has content overlap)
-        return query_has_academic_keywords and (response_has_specific_info or has_content_overlap)
 
     def retrieve_relevant_documents(self, query: str, k: int = 4) -> List[Document]:
         """Retrieve relevant documents for the query."""
@@ -311,24 +255,9 @@ class RAGEngine:
         self.memory.add_message(session_id, "user", user_query)
         self.memory.add_message(session_id, "assistant", response)
         
-        # Prepare deduplicated sources (one per file)
-        sources_dict = {}
-        for doc in relevant_docs:
-            source_file = doc.metadata.get('source_file', 'Unknown')
-            if source_file not in sources_dict:
-                # Use the first occurrence (highest relevance) for each file
-                sources_dict[source_file] = {
-                    "file": source_file,
-                    "content_preview": doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content
-                }
-        
-        # Determine if sources should be shown
-        show_sources = self._should_show_sources(relevant_docs, user_query, response)
-        
-        # Prepare response data
+        # Prepare response data (sources still processed but not returned for display)
         result = {
             "response": response,
-            "sources": list(sources_dict.values()) if show_sources else [],
             "session_id": session_id
         }
         
@@ -371,9 +300,6 @@ def main():
         try:
             result = rag.chat(user_input)
             print(f"\nJozef: {result['response']}")
-            
-            if result['sources']:
-                print(f"\n📚 Retrieved information from {len(result['sources'])} source(s)")
                 
         except Exception as e:
             print(f"Error: {e}")

@@ -8,10 +8,10 @@ A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-
 - **🔍 Advanced RAG System**: Combines document retrieval with conversational AI using Chroma vector database
 - **💾 Memory Management**: Maintains conversation context for natural dialogue
 - **🎨 Renaissance-Inspired UI**: Clean, scholarly interface with period-appropriate design
-- **📚 Source Attribution**: Shows which documents informed each response (when relevant)
-- **🔒 Privacy-First**: Uses local Ollama LLM server - no data sent to external APIs
+- ** Privacy-First**: Uses local Ollama LLM server - no data sent to external APIs
 - **⚡ Real-time Streaming**: Smooth, progressive response streaming with optimized token limits
-- **� Clean Chat Experience**: Text-only interface optimized for academic research
+- **🎯 Smart Context Usage**: Clearly indicates when responding from handbooks vs. general knowledge
+- **📝 Clean Chat Experience**: Text-only interface optimized for academic research
 
 ## 🛠️ Prerequisites
 
@@ -87,6 +87,8 @@ Place your Neo-Latin handbooks (OCRed PDFs) in the `my_pdfs` directory:
 cp your_neolatin_handbook.pdf my_pdfs/
 ```
 
+**📄 Copyright Protection**: PDF files in `my_pdfs/` are automatically excluded from Git commits to respect copyright. The directory structure is preserved with a `.gitkeep` file. The existing `test.pdf` remains tracked as a sample document, but any new PDF files you add will be automatically ignored.
+
 ### 2. Vectorize Documents (Required Before First Use)
 
 **Important**: Before starting the chatbot, you must vectorize your documents:
@@ -117,15 +119,17 @@ Then open your browser to: `http://localhost:5001`
 
 - **💬 Text Chat**: Type your questions about Neo-Latin studies in the input field
   - Supports real-time streaming responses with typing indicators
-  - Automatic source attribution when relevant
+  - Clear indication when responses use handbooks ("According to my handbooks...")
+  - Transparent fallback to general knowledge when handbooks don't contain relevant info
   - Conversation memory for context-aware discussions
-  - Clean, academic-focused interface
+  - Clean, academic-focused interface without visual clutter
 
 ### 4. Process Documents
 
-Use the "Process Documents" button in the web interface, or run manually:
+Documents are processed using the separate vectorization script:
 ```bash
-python src/document_processor.py
+# Process documents before starting the chatbot
+python vectorize.py
 ```
 
 ### 5. Command Line Testing
@@ -142,32 +146,34 @@ ragbot/
 ├── app.py                      # Flask web application
 ├── config.py                   # Configuration settings  
 ├── requirements.txt            # Python dependencies
+├── vectorize.py               # Document vectorization script
+├── VECTORIZATION_GUIDE.md     # Detailed vectorization guide
 ├── .env.example               # Environment variables template
 ├── .env                       # Environment variables (local)
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file
 ├── my_pdfs/                   # PDF documents directory
-│   └── test.pdf              # Sample document
+│   ├── .gitkeep              # Preserves directory in Git
+│   └── test.pdf              # Sample document (tracked in Git for demo purposes)
 ├── src/
-│   ├── document_processor.py  # PDF processing and vectorization
+│   ├── document_processor.py  # PDF processing and vectorization core
 │   └── rag_engine.py         # RAG logic and conversation management
 ├── templates/
 │   ├── index.html            # Main Renaissance-inspired web interface
-│   └── test_streaming.html   # Streaming test interface
+│   └── index_clean.html      # Alternative clean interface (unused)
 ├── static/                    # Static web assets
 │   ├── css/
 │   └── js/
-├── chroma_db/                # Vector database (auto-created)
-└── tts_cache/                # Cached files (legacy, can be removed)
+└── chroma_db/                # Vector database (created by vectorize.py)
 ```
 
 ## 🔧 Key Components
 
 ### Document Processor (`src/document_processor.py`)
 - Loads and chunks PDF documents
-- Creates embeddings using HuggingFace models
+- Creates embeddings using Ollama embedding models
 - Stores vectors in Chroma database
-- Handles duplicate detection
+- Handles duplicate detection and incremental updates
 
 ### RAG Engine (`src/rag_engine.py`)
 - Manages conversation memory
@@ -176,11 +182,17 @@ ragbot/
 - Provides streaming response capabilities
 - Formats context for optimal results
 
+### Vectorization Script (`vectorize.py`)
+- Standalone script for document processing
+- Pre-production vectorization pipeline
+- Comprehensive error checking and verification
+- Command-line interface with multiple options
+
 ### Web Interface (`templates/index.html`)
 - Renaissance-inspired design with Bootstrap
 - Real-time streaming chat interface with typing indicators
 - Clean, academic-focused user experience
-- Source attribution display
+- Smart response attribution system
 - Responsive design for mobile and desktop
 
 ## ⚙️ Advanced Configuration
@@ -199,9 +211,9 @@ TEMPERATURE=0.5      # Higher creativity vs consistency
 ```
 
 ### Embedding Models
-Modify the embedding model in `config.py`:
-```python
-EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"  # Higher quality
+Modify the embedding model in `.env`:
+```env
+EMBEDDING_MODEL=nomic-embed-text  # Default Ollama embedding model
 ```
 
 ### Chunk Settings
@@ -224,20 +236,26 @@ CHUNK_OVERLAP=200    # More overlap for better continuity
 2. **No Documents Found**:
    - Check PDF files are in `my_pdfs/` directory
    - Ensure files have `.pdf` extension
-   - Run document processor manually to see errors
+   - Run `python vectorize.py` to process documents
+   - Check vectorization guide: `VECTORIZATION_GUIDE.md`
 
-3. **Streaming Issues**:
+3. **Vector Database Issues**:
+   - Run `python vectorize.py --verify-only` to test existing database
+   - Use `python vectorize.py --force-reindex` to rebuild completely
+   - Check that `chroma_db/` directory exists and contains data
+
+4. **Streaming Issues**:
    - Check browser console for JavaScript errors
    - Try refreshing the page
    - Verify `/chat/stream` endpoint is responding
    - Check Flask debug output for server errors
 
-4. **Incomplete Responses**:
+5. **Incomplete Responses**:
    - Increase `MAX_TOKENS` in `.env` (current: 1024)
    - Reduce `CHUNK_SIZE` to leave more room for responses
    - Check Ollama model performance with `ollama show llama3.1`
 
-5. **Memory Issues**:
+6. **Memory Issues**:
    - Reduce `CHUNK_SIZE` in `.env`
    - Limit `MAX_CONVERSATION_HISTORY`
    - Restart the application periodically
@@ -251,14 +269,38 @@ FLASK_DEBUG=True
 
 View detailed logs in the terminal where you run `python app.py`.
 
+## 📄 Copyright & File Management
+
+### PDF Document Handling
+- **Local Storage**: Add your PDF documents to the `my_pdfs/` directory for processing
+- **Git Protection**: All **new** PDF files in `my_pdfs/` are automatically excluded from Git commits
+- **Sample Document**: The existing `test.pdf` remains tracked as a reference/demo document
+- **Directory Preservation**: The `my_pdfs/` folder structure is maintained via `.gitkeep`
+- **Privacy First**: Your research documents remain local and are never pushed to remote repositories
+
+### Sharing Your Setup
+When sharing this project or deploying to production:
+```bash
+# The repository contains the code structure but no PDF content
+git clone <your-repo-url>
+cd ragbot
+
+# Add your own PDF documents locally
+cp your_documents/*.pdf my_pdfs/
+
+# Vectorize your documents
+python vectorize.py
+```
+
 ## 🎓 Academic Use
 
 This chatbot is designed for scholarly research in Neo-Latin Studies. It:
-- Provides citations and source references when relevant
+- Clearly distinguishes between handbook-based and general knowledge responses
 - Maintains academic tone and accuracy
 - Supports complex historical and literary queries
 - Preserves conversation context for extended research sessions
 - Protects privacy with local processing
+- Provides transparent source attribution through response prefixes
 
 ## � Production Deployment
 

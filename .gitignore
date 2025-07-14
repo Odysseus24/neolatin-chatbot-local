@@ -37,6 +37,10 @@ chroma_db/
 *.db
 *.sqlite3
 
+# PDF Documents (excluded for copyright reasons)
+my_pdfs/*.pdf
+my_pdfs/**/*.pdf
+
 # Logs
 *.log
 logs/

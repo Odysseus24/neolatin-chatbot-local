@@ -64,7 +64,6 @@ def chat():
         
         return jsonify({
             'response': result['response'],
-            'sources': result['sources'],
             'session_id': result['session_id']
         })
         
@@ -119,20 +118,8 @@ def chat_stream():
                 rag_engine.memory.add_message(session_id, "user", user_message)
                 rag_engine.memory.add_message(session_id, "assistant", full_response)
                 
-                # Send sources at the end
-                sources_dict = {}
-                for doc in relevant_docs:
-                    source_file = doc.metadata.get('source_file', 'Unknown')
-                    if source_file not in sources_dict:
-                        sources_dict[source_file] = {
-                            "file": source_file,
-                            "content_preview": doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content
-                        }
-                
-                show_sources = rag_engine._should_show_sources(relevant_docs, user_message, full_response)
-                sources = list(sources_dict.values()) if show_sources else []
-                
-                yield f"data: {json.dumps({'sources': sources, 'done': True, 'session_id': session_id})}\n\n"
+                # Send completion signal
+                yield f"data: {json.dumps({'done': True, 'session_id': session_id})}\n\n"
                 
             except Exception as e:
                 yield f"data: {json.dumps({'error': f'Error: {str(e)}', 'done': True})}\n\n"

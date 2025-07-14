@@ -1,9 +1,11 @@
+# Jozef Neo-Latin Studies Chatbot - Dependencies
+# Main application requirements
 flask==3.0.0
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-chroma==0.1.4
 chromadb==0.4.22
-pypdf2==3.0.1
+pypdf>=3.0.0
 ollama==0.1.7
 python-dotenv==1.0.0
 requests==2.31.0
