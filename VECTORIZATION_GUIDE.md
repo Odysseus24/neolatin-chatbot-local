@@ -138,7 +138,7 @@ For production deployment:
 ## File Structure After Vectorization
 
 ```
-ragbot/
+neolatin-chatbot-local/
 ├── app.py                 # Main Flask application
 ├── vectorize.py          # Vectorization script
 ├── config.py             # Configuration settings

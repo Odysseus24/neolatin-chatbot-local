@@ -33,8 +33,8 @@ A sophisticated RAG (Retrieval-Augmented Generation) chatbot specialized in Neo-
 
 1. **Clone the repository**:
    ```bash
-   git clone <your-repo-url>
-   cd ragbot
+   git clone https://github.com/Odysseus24/neolatin-chatbot-local.git
+   cd neolatin-chatbot-local
    ```
 
 2. **Create and activate a virtual environment**:
@@ -147,7 +147,7 @@ python src/rag_engine.py
 ## 📁 Project Structure
 
 ```
-ragbot/
+neolatin-chatbot-local/
 ├── app.py                      # Flask web application
 ├── config.py                   # Configuration settings  
 ├── requirements.txt            # Python dependencies
@@ -293,8 +293,8 @@ View detailed logs in the terminal where you run `python app.py`.
 When sharing this project or deploying to production:
 ```bash
 # The repository contains the code structure but no PDF content
-git clone <your-repo-url>
-cd ragbot
+git clone https://github.com/Odysseus24/neolatin-chatbot-local.git
+cd neolatin-chatbot-local
 
 # Add your own PDF documents locally
 cp your_documents/*.pdf my_pdfs/
@@ -337,7 +337,7 @@ python vectorize.py --verify-only
 
 ```bash
 # 1. Copy project to production server (excluding .env and chroma_db)
-rsync -av --exclude='.env' --exclude='chroma_db' ragbot/ production_server:chatbot/
+rsync -av --exclude='.env' --exclude='chroma_db' neolatin-chatbot-local/ production_server:chatbot/
 
 # 2. Copy the vectorized database
 rsync -av chroma_db/ production_server:chatbot/chroma_db/
